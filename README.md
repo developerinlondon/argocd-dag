@@ -41,7 +41,7 @@ server:
       - name: argocd-dag
         env:
           - name: EXTENSION_URL
-            value: https://github.com/developerinlondon/argocd-dag/releases/download/v1.0.0/extension.tar
+            value: https://github.com/developerinlondon/argocd-dag/releases/download/v0.1.0/extension.tar
 ```
 
 Or mount the extension manually via an init container:
@@ -56,7 +56,7 @@ server:
       command: [sh, -c]
       args:
         - |
-          wget -qO- https://github.com/developerinlondon/argocd-dag/releases/download/v1.0.0/extension.tar | tar xf - -C /tmp/extensions/
+          wget -qO- https://github.com/developerinlondon/argocd-dag/releases/download/v0.1.0/extension.tar | tar xf - -C /tmp/extensions/
       volumeMounts:
         - name: extensions
           mountPath: /tmp/extensions/
