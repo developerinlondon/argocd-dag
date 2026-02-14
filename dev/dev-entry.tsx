@@ -2,7 +2,11 @@ import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { installMockApi } from "./mock-api";
 
-installMockApi();
+declare const process: { env: { USE_LIVE_API?: boolean } };
+
+if (!process.env.USE_LIVE_API) {
+  installMockApi();
+}
 
 type ExtensionComponent = () => React.ReactElement;
 

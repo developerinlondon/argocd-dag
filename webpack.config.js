@@ -36,6 +36,24 @@ const productionConfig = {
   mode: "production",
 };
 
+const webpack = require("webpack");
+
+const argocdBaseUrl = process.env.ARGOCD_URL || "https://argocd.jeebon.dev";
+const argocdToken = process.env.ARGOCD_TOKEN || "";
+const useLiveApi = Boolean(argocdToken);
+
+const devProxy = useLiveApi
+  ? [
+      {
+        context: ["/api"],
+        target: argocdBaseUrl,
+        secure: false,
+        changeOrigin: true,
+        headers: { Authorization: "Bearer " + argocdToken },
+      },
+    ]
+  : undefined;
+
 const developmentConfig = {
   entry: "./dev/dev-entry.tsx",
   output: {
@@ -51,8 +69,12 @@ const developmentConfig = {
     port: 3000,
     hot: true,
     open: false,
+    proxy: devProxy,
   },
   plugins: [
+    new webpack.DefinePlugin({
+      "process.env.USE_LIVE_API": JSON.stringify(useLiveApi),
+    }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "dev/index.html"),
       inject: "body",

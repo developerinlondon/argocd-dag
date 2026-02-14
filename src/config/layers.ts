@@ -8,7 +8,8 @@ export interface LayerConfig {
 export const CATEGORY_LABEL_KEY = "jeebon.ai/category";
 
 export const DEFAULT_LAYERS: Record<string, LayerConfig> = {
-  foundation: { order: 0, dependsOn: [], label: "Foundation" },
+  pipeline: { order: -1, dependsOn: [], label: "Pipeline" },
+  foundation: { order: 0, dependsOn: ["pipeline"], label: "Foundation" },
   operators: { order: 1, dependsOn: ["foundation"], label: "Operators" },
   monitoring: { order: 1, dependsOn: ["foundation"], label: "Monitoring" },
   secrets: { order: 2, dependsOn: ["operators"], label: "Secrets" },

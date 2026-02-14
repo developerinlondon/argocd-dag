@@ -23,12 +23,24 @@ function isLayerActive(apps: Application[]): boolean {
   });
 }
 
-function buildStages(): Stage[] {
+function buildStages(layerKeys: string[]): Stage[] {
   const orderMap = new Map<number, [string, LayerConfig][]>();
+
   for (const [key, config] of Object.entries(DEFAULT_LAYERS)) {
     const existing = orderMap.get(config.order) ?? [];
     existing.push([key, config]);
     orderMap.set(config.order, existing);
+  }
+
+  const maxOrder = Math.max(...Array.from(orderMap.keys()), 0);
+  const unknownKeys = layerKeys.filter((k) => !(k in DEFAULT_LAYERS));
+  if (unknownKeys.length > 0) {
+    const uncatOrder = maxOrder + 1;
+    const uncatLayers: [string, LayerConfig][] = unknownKeys.map((k) => [
+      k,
+      { order: uncatOrder, dependsOn: [], label: k.charAt(0).toUpperCase() + k.slice(1) },
+    ]);
+    orderMap.set(uncatOrder, uncatLayers);
   }
 
   return Array.from(orderMap.entries())
@@ -46,7 +58,8 @@ export function PlatformOverview(): React.ReactElement {
   const [colorMode, setColorMode] = useState<"light" | "dark">("light");
   const isDark = colorMode === "dark";
 
-  const stages = useMemo(() => buildStages(), []);
+  const layerKeys = useMemo(() => Object.keys(layers), [layers]);
+  const stages = useMemo(() => buildStages(layerKeys), [layerKeys]);
 
   const allAppNames = useMemo(() => {
     const names: string[] = [];
