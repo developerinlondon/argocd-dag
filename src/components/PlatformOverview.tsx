@@ -1,91 +1,87 @@
 import * as React from "react";
-import { useMemo } from "react";
-import {
-  ReactFlow,
-  Background,
-  Controls,
-  BackgroundVariant,
-  MarkerType,
-  type Node,
-  type Edge,
-} from "@xyflow/react";
-import dagre from "@dagrejs/dagre";
-import "@xyflow/react/dist/style.css";
+import { useMemo, useCallback, useState } from "react";
 
 import { useApplications } from "../hooks/useApplications";
-import { DEFAULT_LAYERS } from "../config/layers";
-import { LayerNode, LayerNodeData } from "./LayerNode";
+import { DEFAULT_LAYERS, LayerConfig } from "../config/layers";
+import { LayerCard } from "./LayerNode";
 import { Application } from "../types/argocd";
 import "../styles/index.css";
 
-const NODE_WIDTH = 280;
-const NODE_HEIGHT_COLLAPSED = 72;
-const RANK_SEP = 100;
-const NODE_SEP = 60;
+interface Stage {
+  order: number;
+  layers: [string, LayerConfig][];
+}
 
-const nodeTypes = { layer: LayerNode };
+function isLayerActive(apps: Application[]): boolean {
+  return apps.some((app) => {
+    const health = app.status.health?.status;
+    const sync = app.status.sync?.status;
+    const opPhase = app.status.operationState?.phase;
+    const hooks = app.status.operationState?.syncResult?.resources ?? [];
+    const hookRunning = hooks.some((r) => r.hookType === "PostSync" && r.hookPhase === "Running");
+    return health === "Progressing" || sync === "OutOfSync" || opPhase === "Running" || hookRunning;
+  });
+}
 
-function buildGraph(
-  layers: Record<string, Application[]>
-): { nodes: Node<LayerNodeData>[]; edges: Edge[] } {
-  const g = new dagre.graphlib.Graph();
-  g.setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "TB", ranksep: RANK_SEP, nodesep: NODE_SEP });
-
-  const nodes: Node<LayerNodeData>[] = [];
-  const edges: Edge[] = [];
-
+function buildStages(): Stage[] {
+  const orderMap = new Map<number, [string, LayerConfig][]>();
   for (const [key, config] of Object.entries(DEFAULT_LAYERS)) {
-    const apps = layers[key] ?? [];
-
-    g.setNode(key, { width: NODE_WIDTH, height: NODE_HEIGHT_COLLAPSED });
-
-    nodes.push({
-      id: key,
-      type: "layer",
-      position: { x: 0, y: 0 },
-      data: {
-        label: config.label,
-        apps,
-      },
-    });
-
-    for (const dep of config.dependsOn) {
-      const edgeId = `${dep}->${key}`;
-      g.setEdge(dep, key);
-      edges.push({
-        id: edgeId,
-        source: dep,
-        target: key,
-        type: "smoothstep",
-        animated: true,
-        markerEnd: { type: MarkerType.ArrowClosed, color: "#64748b" },
-        style: { stroke: "#64748b", strokeWidth: 2 },
-      });
-    }
+    const existing = orderMap.get(config.order) ?? [];
+    existing.push([key, config]);
+    orderMap.set(config.order, existing);
   }
 
-  dagre.layout(g);
+  return Array.from(orderMap.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([order, layers]) => ({ order, layers }));
+}
 
-  for (const node of nodes) {
-    const pos = g.node(node.id);
-    node.position = {
-      x: pos.x - NODE_WIDTH / 2,
-      y: pos.y - NODE_HEIGHT_COLLAPSED / 2,
-    };
-  }
-
-  return { nodes, edges };
+function isStageActive(stage: Stage, allLayers: Record<string, Application[]>): boolean {
+  return stage.layers.some(([key]) => isLayerActive(allLayers[key] ?? []));
 }
 
 export function PlatformOverview(): React.ReactElement {
   const { layers, loading, error } = useApplications();
+  const [expandedApps, setExpandedApps] = useState<Set<string>>(new Set());
+  const [colorMode, setColorMode] = useState<"light" | "dark">("light");
+  const isDark = colorMode === "dark";
 
-  const { nodes, edges } = useMemo(() => buildGraph(layers), [layers]);
+  const stages = useMemo(() => buildStages(), []);
+
+  const allAppNames = useMemo(() => {
+    const names: string[] = [];
+    for (const apps of Object.values(layers)) {
+      for (const app of apps) {
+        names.push(app.metadata.name);
+      }
+    }
+    return names;
+  }, [layers]);
+
+  const allExpanded = allAppNames.length > 0 && allAppNames.every((n) => expandedApps.has(n));
+
+  const toggleApp = useCallback((name: string) => {
+    setExpandedApps((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    setExpandedApps((prev) => {
+      const allCurrentlyExpanded = allAppNames.length > 0 && allAppNames.every((n) => prev.has(n));
+      return allCurrentlyExpanded ? new Set<string>() : new Set(allAppNames);
+    });
+  }, [allAppNames]);
 
   if (loading && Object.keys(layers).length === 0) {
     return (
-      <div className="dag-container dag-center">
+      <div className="dag-container dag-light dag-center">
         <div className="dag-loading">Loading applications...</div>
       </div>
     );
@@ -93,7 +89,7 @@ export function PlatformOverview(): React.ReactElement {
 
   if (error && Object.keys(layers).length === 0) {
     return (
-      <div className="dag-container dag-center">
+      <div className="dag-container dag-light dag-center">
         <div className="dag-error">
           <strong>Error:</strong> {error}
         </div>
@@ -102,28 +98,59 @@ export function PlatformOverview(): React.ReactElement {
   }
 
   return (
-    <div className="dag-container">
+    <div className={`dag-container ${isDark ? "dag-dark" : "dag-light"}`}>
+      <div className="dag-toolbar">
+        <button
+          className="dag-expand-all-btn"
+          onClick={toggleAll}
+        >
+          {allExpanded ? "Collapse All" : "Expand All"}
+        </button>
+        <button
+          className="dag-theme-toggle"
+          onClick={() => setColorMode((m) => (m === "dark" ? "light" : "dark"))}
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDark ? "\u2600" : "\u263D"}
+        </button>
+      </div>
       {error && (
         <div className="dag-error-banner">
           Refresh failed: {error}
         </div>
       )}
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.3}
-        maxZoom={2}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#334155" />
-        <Controls showInteractive={false} />
-      </ReactFlow>
+      <div className="dag-pipeline">
+        {stages.map((stage, idx) => {
+          const stageActive = isStageActive(stage, layers);
+          const prevActive = idx > 0 && isStageActive(stages[idx - 1], layers);
+          const arrowActive = stageActive || prevActive;
+
+          return (
+            <React.Fragment key={stage.order}>
+              {idx > 0 && (
+                <div className={`dag-arrow ${arrowActive ? "dag-arrow-active" : ""}`}>
+                  <svg viewBox="0 0 24 40">
+                    <polyline points="6,8 18,20 6,32" />
+                  </svg>
+                </div>
+              )}
+              <div className="dag-stage-column">
+                {stage.layers.map(([key, config]) => (
+                  <LayerCard
+                    key={key}
+                    id={key}
+                    label={config.label}
+                    apps={layers[key] ?? []}
+                    expandedApps={expandedApps}
+                    active={isLayerActive(layers[key] ?? [])}
+                    onToggleApp={toggleApp}
+                  />
+                ))}
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </div>
     </div>
   );
 }

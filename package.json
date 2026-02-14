@@ -8,8 +8,6 @@
     "dev": "webpack serve --config webpack.config.js --env development"
   },
   "dependencies": {
-    "@dagrejs/dagre": "^2.0.4",
-    "@xyflow/react": "^12.10.0",
     "axios": "^1.13.5",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
