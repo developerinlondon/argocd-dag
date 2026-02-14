@@ -31,6 +31,10 @@ const productionConfig = {
     libraryTarget: "window",
     library: ["tmp", "extensions"],
   },
+  externals: {
+    react: "React",
+    "react-dom": "ReactDOM",
+  },
   resolve: sharedResolve,
   module: { rules: [tsRule(), cssRule] },
   mode: "production",
