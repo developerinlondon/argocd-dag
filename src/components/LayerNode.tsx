@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Application } from "../types/argocd";
 import { AppCard } from "./AppCard";
+import { formatTimestamp } from "../utils/time";
 
 interface LayerCardProps {
   id: string;
@@ -9,6 +10,7 @@ interface LayerCardProps {
   expandedApps: Set<string>;
   active: boolean;
   onToggleApp: (appName: string) => void;
+  onToggleLayer: (appNames: string[]) => void;
 }
 
 function computeLayerStatus(apps: Application[]): "healthy" | "warning" | "error" {
@@ -79,9 +81,12 @@ function validationStatus(app: Application): { cls: string; title: string } {
   return { cls: "dag-dot-grey", title: "Unknown" };
 }
 
-export function LayerCard({ id, label, apps, expandedApps, active, onToggleApp }: LayerCardProps): React.ReactElement {
+export function LayerCard({ id, label, apps, expandedApps, active, onToggleApp, onToggleLayer }: LayerCardProps): React.ReactElement {
   const status = computeLayerStatus(apps);
   const borderColor = statusBorderColor(status);
+
+  const appNames = apps.map((a) => a.metadata.name);
+  const allExpanded = appNames.length > 0 && appNames.every((n) => expandedApps.has(n));
 
   const classNames = [
     "dag-layer-node",
@@ -94,6 +99,15 @@ export function LayerCard({ id, label, apps, expandedApps, active, onToggleApp }
       style={{ borderColor }}
     >
       <div className="dag-layer-header">
+        {appNames.length > 0 && (
+          <button
+            className="dag-layer-expand-btn"
+            onClick={() => onToggleLayer(appNames)}
+            title={allExpanded ? "Collapse layer" : "Expand layer"}
+          >
+            {allExpanded ? "\u2212" : "+"}
+          </button>
+        )}
         <span className="dag-layer-label">{label}</span>
       </div>
 
@@ -104,6 +118,9 @@ export function LayerCard({ id, label, apps, expandedApps, active, onToggleApp }
           const s = syncStatus(app);
           const h = healthStatus(app);
           const v = validationStatus(app);
+          const appUrl = `/applications/${app.metadata.namespace}/${appName}`;
+          const lastSync = app.status.operationState?.finishedAt;
+          const timeAgo = formatTimestamp(lastSync);
           return (
             <div key={appName} className="dag-app-entry">
               <div className="dag-app-row">
@@ -119,7 +136,8 @@ export function LayerCard({ id, label, apps, expandedApps, active, onToggleApp }
                   <span className={`dag-dot ${h.cls}`} title={h.title}></span>
                   <span className={`dag-dot ${v.cls}`} title={v.title}></span>
                 </span>
-                <span className="dag-app-row-name">{appName}</span>
+                <a className="dag-app-row-name" href={appUrl} title={appName}>{appName}</a>
+                {timeAgo && <span className="dag-app-row-time">{timeAgo}</span>}
               </div>
               {isExpanded && (
                 <AppCard app={app} />

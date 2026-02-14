@@ -50,6 +50,14 @@ const devProxy = useLiveApi
         secure: false,
         changeOrigin: true,
         headers: { Authorization: "Bearer " + argocdToken },
+        onProxyRes: function (proxyRes, req) {
+          if (req.headers.accept === "text/event-stream") {
+            proxyRes.headers["cache-control"] = "no-cache";
+            proxyRes.headers["x-accel-buffering"] = "no";
+            delete proxyRes.headers["content-encoding"];
+            delete proxyRes.headers["content-length"];
+          }
+        },
       },
     ]
   : undefined;
@@ -69,6 +77,7 @@ const developmentConfig = {
     port: 3000,
     hot: true,
     open: false,
+    compress: false,
     proxy: devProxy,
   },
   plugins: [

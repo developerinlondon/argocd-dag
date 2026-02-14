@@ -53,7 +53,7 @@ function isStageActive(stage: Stage, allLayers: Record<string, Application[]>): 
 }
 
 export function PlatformOverview(): React.ReactElement {
-  const { layers, loading, error } = useApplications();
+  const { layers, loading, error, connected } = useApplications();
   const [expandedApps, setExpandedApps] = useState<Set<string>>(new Set());
   const [colorMode, setColorMode] = useState<"light" | "dark">("light");
   const isDark = colorMode === "dark";
@@ -80,6 +80,19 @@ export function PlatformOverview(): React.ReactElement {
         next.delete(name);
       } else {
         next.add(name);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleLayer = useCallback((appNames: string[]) => {
+    setExpandedApps((prev) => {
+      const allInLayerExpanded = appNames.every((n) => prev.has(n));
+      const next = new Set(prev);
+      if (allInLayerExpanded) {
+        for (const n of appNames) next.delete(n);
+      } else {
+        for (const n of appNames) next.add(n);
       }
       return next;
     });
@@ -113,6 +126,10 @@ export function PlatformOverview(): React.ReactElement {
   return (
     <div className={`dag-container ${isDark ? "dag-dark" : "dag-light"}`}>
       <div className="dag-toolbar">
+        <span
+          className={`dag-connection-dot ${connected ? "dag-connected" : "dag-disconnected"}`}
+          title={connected ? "Live (SSE connected)" : "Reconnecting..."}
+        />
         <button
           className="dag-expand-all-btn"
           onClick={toggleAll}
@@ -157,6 +174,7 @@ export function PlatformOverview(): React.ReactElement {
                     expandedApps={expandedApps}
                     active={isLayerActive(layers[key] ?? [])}
                     onToggleApp={toggleApp}
+                    onToggleLayer={toggleLayer}
                   />
                 ))}
               </div>
