@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { Application, SyncResultResource, ResourceNode } from "../types/argocd";
 import { formatTimestamp } from "../utils/time";
 
@@ -122,13 +121,11 @@ export function AppCard({ app }: AppCardProps): React.ReactElement {
 
   useEffect(() => {
     let cancelled = false;
-    axios
-      .get(`/api/v1/applications/${appName}/resource-tree`, {
-        params: { appNamespace: appNs },
-      })
-      .then((res) => {
+    fetch(`/api/v1/applications/${appName}/resource-tree?appNamespace=${appNs}`)
+      .then((res) => res.json())
+      .then((data) => {
         if (!cancelled) {
-          setResourceNodes(res.data.nodes ?? []);
+          setResourceNodes(data.nodes ?? []);
           setTreeLoading(false);
         }
       })
