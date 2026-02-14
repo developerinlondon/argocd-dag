@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArgoCD - Platform Overview (Dev)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+    }
+
+    .argocd-header {
+      height: 64px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+    }
+
+    .argocd-header-logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f1f5f9;
+      letter-spacing: 0.02em;
+    }
+
+    .argocd-header-separator {
+      width: 1px;
+      height: 28px;
+      background: #475569;
+    }
+
+    .argocd-header-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #94a3b8;
+    }
+
+    .argocd-header-badge {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    #root {
+      height: calc(100vh - 64px);
+    }
+  </style>
+</head>
+<body>
+  <div class="argocd-header">
+    <span class="argocd-header-logo">Argo CD</span>
+    <span class="argocd-header-separator"></span>
+    <span class="argocd-header-title">Platform Overview</span>
+    <span class="argocd-header-badge">DEV</span>
+  </div>
+  <div id="root"></div>
+</body>
+</html>

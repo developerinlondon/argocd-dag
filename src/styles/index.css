@@ -1,0 +1,293 @@
+.dag-container {
+  width: 100%;
+  height: calc(100vh - 64px);
+  background: #0f172a;
+  position: relative;
+}
+
+.dag-container.dag-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dag-loading {
+  color: #94a3b8;
+  font-size: 15px;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  letter-spacing: 0.02em;
+}
+
+.dag-error {
+  color: #fca5a5;
+  font-size: 14px;
+  padding: 16px 24px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  max-width: 480px;
+  text-align: center;
+}
+
+.dag-error strong {
+  color: #ef4444;
+}
+
+.dag-error-banner {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: #fbbf24;
+  font-size: 12px;
+  padding: 6px 14px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 6px;
+}
+
+.dag-layer-node {
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 12px;
+  padding: 14px 18px;
+  min-width: 240px;
+  max-width: 380px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, max-height 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dag-layer-node:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.dag-layer-expanded {
+  max-width: 420px;
+}
+
+.dag-layer-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dag-layer-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5f9;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  letter-spacing: 0.01em;
+}
+
+.dag-layer-summary {
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.dag-layer-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.dag-indicator-healthy {
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+.dag-indicator-warning {
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+}
+
+.dag-indicator-error {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+}
+
+.dag-layer-apps {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dag-app-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: border-color 0.15s ease;
+}
+
+.dag-app-card:hover {
+  border-color: #475569;
+}
+
+.dag-app-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.dag-app-card-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #38bdf8;
+  text-decoration: none;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.dag-app-card-name:hover {
+  color: #7dd3fc;
+  text-decoration: underline;
+}
+
+.dag-app-card-time {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.dag-app-card-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dag-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.dag-sync-synced {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.dag-sync-outofsync {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.dag-sync-unknown {
+  background: rgba(100, 116, 139, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.dag-health-healthy {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.dag-health-progressing {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.dag-health-degraded {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.dag-health-suspended {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.dag-health-missing {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.dag-health-unknown {
+  background: rgba(100, 116, 139, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.dag-hook-status {
+  margin-top: 6px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.dag-hook-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.dag-hook-succeeded {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.dag-hook-failed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.dag-hook-running {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.dag-hook-unknown {
+  background: rgba(100, 116, 139, 0.15);
+  color: #94a3b8;
+}
+
+.dag-handle {
+  width: 8px !important;
+  height: 8px !important;
+  background: #475569 !important;
+  border: 2px solid #1e293b !important;
+}
+
+.react-flow__controls {
+  background: #1e293b !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.react-flow__controls-button {
+  background: #1e293b !important;
+  border-bottom: 1px solid #334155 !important;
+  fill: #94a3b8 !important;
+}
+
+.react-flow__controls-button:hover {
+  background: #334155 !important;
+}
+
+.react-flow__edge-path {
+  stroke: #64748b;
+}
+
+.react-flow__background {
+  background: #0f172a !important;
+}
